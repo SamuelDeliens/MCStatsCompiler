@@ -118,7 +118,7 @@ def loadVanillaData(csvtoggle, csvpath, inputmode, ftpserver, ftppath, localpath
             except Exception as e:
                 print('Failed to remove %s. Reason: %s' % (file_path, e))
         for filename in filenames:
-            if filename[-1] == ".":
+            if filename[-1] == "." or filename == ".DS_Store":
                 continue
             filename = filename.split("/")[-1]
             print("Now processing", filename)
@@ -276,7 +276,7 @@ def loadCobblemonData(csvtoggle, csvpath, inputmode, ftpserver, ftppath, localpa
             # Create the sub-folder on the local level
             os.mkdir("data/cobblemonplayerdata/"+subfolder)
             for filename in filenames:
-                if filename == "." or filename == "..":
+                if filename == "." or filename == ".." or filename == ".DS_Store":
                     continue
                 print("Now processing", filename)
                 
@@ -337,7 +337,7 @@ def loadCobblemonData(csvtoggle, csvpath, inputmode, ftpserver, ftppath, localpa
             if len(dirnames) > 0:
                 root_dirnames = dirnames
             for filename in filenames:
-                if filename == ".gitignore":
+                if filename == ".gitignore" or filename == ".DS_Store":
                     continue
                 print("Now processing", filename)
                 file = open(path + '/' + root_dirnames[i] + '/' + filename)
