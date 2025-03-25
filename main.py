@@ -12,7 +12,7 @@ import paramiko
 import stat
 import sqlite3
 import shutil
-import excel2img
+import matplotlib.pyplot as plt
 
 # Creation or update of the SQLite table
 def init_database(db_path="scoreboard.db"):
@@ -537,9 +537,27 @@ if config['COBBLEMONLEADERBOARDS']['LegEnable'] == "true":
 if config['COBBLEMONLEADERBOARDS']['SQLiteOutput']:
     conn.close()
 
-# Excel to image conversion
-if config['COBBLEMONLEADERBOARDS']['XLSXOutput'] == "true":
-    excel2img.export_images("output.xlsx", "output.png")
-    print("Excel to image conversion done.")
+
+def generate_leaderboard_image(df, title, filename="leaderboard.png"):
+    plt.figure(figsize=(10, 6))
+    top_players = df.head(10)
+    plt.barh(top_players.index, top_players[0], color='skyblue')
+    plt.title(title, fontsize=14)
+    plt.xlabel("Nombre de Pokémon", fontsize=12)
+    plt.grid(axis='x', linestyle='--', alpha=0.7)
+
+    # Ajouter les valeurs sur les barres
+    for index, value in enumerate(top_players[0]):
+        plt.text(value, index, f" {value}", va='center')
+
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    print(f"Image générée : {filename}")
+
+
+if config['COBBLEMONLEADERBOARDS']['TotalEnable'] == "true":
+    player_sum = pd.DataFrame((count_df == "CAUGHT").sum().sort_values())
+    player_sum = player_sum.iloc[::-1]  # Inverser pour avoir le meilleur en premier
+    generate_leaderboard_image(player_sum, "Classement Pokémon (Total)")
 
 print("Done!")
