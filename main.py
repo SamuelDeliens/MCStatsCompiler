@@ -12,7 +12,7 @@ import paramiko
 import stat
 import sqlite3
 import shutil
-
+import excel2img
 
 # Creation or update of the SQLite table
 def init_database(db_path="scoreboard.db"):
@@ -536,5 +536,10 @@ if config['COBBLEMONLEADERBOARDS']['LegEnable'] == "true":
 # SQLite close connection
 if config['COBBLEMONLEADERBOARDS']['SQLiteOutput']:
     conn.close()
+
+# Excel to image conversion
+if config['COBBLEMONLEADERBOARDS']['XLSXOutput'] == "true":
+    excel2img.export_images("output.xlsx", "output.png")
+    print("Excel to image conversion done.")
 
 print("Done!")
