@@ -541,12 +541,16 @@ if config['COBBLEMONLEADERBOARDS']['SQLiteOutput']:
 
 
 
-# Charger les données depuis Excel
-df = pd.read_excel("output.xlsx", sheet_name="leaderboard2")  # Adaptez au bon onglet
+# Charger les données en spécifiant l'en-tête
+df = pd.read_excel("output.xlsx", sheet_name="leaderboard2", header=None)
 
-# Nettoyage des données (exemple)
-df = df.dropna()  # Supprime les lignes vides
-df = df.sort_values(by="Nombre de Pokémon", ascending=False)  # Tri par score
+# Nettoyage manuel (exemple pour votre structure)
+df = df.dropna(how='all')  # Supprime lignes vides
+df.columns = ["Rank", "Joueur", "Score"]  # Nommez selon votre structure réelle
+
+# Conversion des scores en numérique
+df["Score"] = pd.to_numeric(df["Score"], errors='coerce')
+df = df.dropna(subset=["Score"]).sort_values(by="Score", ascending=False)
 
 # Création du graphique
 plt.figure(figsize=(10, 8))
@@ -555,7 +559,7 @@ plt.style.use('ggplot')  # Style moderne
 # Barres horizontales
 bars = plt.barh(
     df["Joueur"][:10][::-1],  # Top 10 inversé pour meilleur en haut
-    df["Nombre de Pokémon"][:10][::-1],
+    df["Score"][:10][::-1],
     color='#4e79a7'  # Couleur bleue
 )
 
