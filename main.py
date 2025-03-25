@@ -13,6 +13,7 @@ import stat
 import sqlite3
 import shutil
 import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
 
 # Creation or update of the SQLite table
 def init_database(db_path="scoreboard.db"):
@@ -538,26 +539,42 @@ if config['COBBLEMONLEADERBOARDS']['SQLiteOutput']:
     conn.close()
 
 
-def generate_leaderboard_image(df, title, filename="leaderboard.png"):
-    plt.figure(figsize=(10, 6))
-    top_players = df.head(10)
-    plt.barh(top_players.index, top_players[0], color='skyblue')
-    plt.title(title, fontsize=14)
-    plt.xlabel("Nombre de Pokémon", fontsize=12)
-    plt.grid(axis='x', linestyle='--', alpha=0.7)
-
-    # Ajouter les valeurs sur les barres
-    for index, value in enumerate(top_players[0]):
-        plt.text(value, index, f" {value}", va='center')
-
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300, bbox_inches='tight')
-    print(f"Image générée : {filename}")
 
 
-if config['COBBLEMONLEADERBOARDS']['TotalEnable'] == "true":
-    player_sum = pd.DataFrame((count_df == "CAUGHT").sum().sort_values())
-    player_sum = player_sum.iloc[::-1]  # Inverser pour avoir le meilleur en premier
-    generate_leaderboard_image(player_sum, "Classement Pokémon (Total)")
+# Charger les données depuis Excel
+df = pd.read_excel("output.xlsx", sheet_name="leaderboard2")  # Adaptez au bon onglet
+
+# Nettoyage des données (exemple)
+df = df.dropna()  # Supprime les lignes vides
+df = df.sort_values(by="Nombre de Pokémon", ascending=False)  # Tri par score
+
+# Création du graphique
+plt.figure(figsize=(10, 8))
+plt.style.use('ggplot')  # Style moderne
+
+# Barres horizontales
+bars = plt.barh(
+    df["Joueur"][:10][::-1],  # Top 10 inversé pour meilleur en haut
+    df["Nombre de Pokémon"][:10][::-1],
+    color='#4e79a7'  # Couleur bleue
+)
+
+# Ajouter les valeurs
+for bar in bars:
+    width = bar.get_width()
+    plt.text(width + 5, bar.get_y() + 0.3, f"{int(width)}",
+             va='center', fontsize=10)
+
+# Personnalisation
+plt.title("Classement Cobblemon - Top 10", fontsize=14, pad=20)
+plt.xlabel("Nombre attrapés", fontsize=12)
+plt.gca().invert_yaxis()  # Meilleur joueur en haut
+plt.tight_layout()
+
+# Sauvegarde
+plt.savefig("leaderboard_clean.png", dpi=120, bbox_inches='tight')
+plt.close()
+
+
 
 print("Done!")
