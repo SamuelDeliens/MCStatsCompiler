@@ -557,7 +557,7 @@ df = df.dropna(how='all')
 title = df.iloc[0, 1]
 players = [] #rank, player, score
 col_name = ["Rank", "Player", "Score"]
-date_srt = df.iloc[-1, 1]
+date_str = df.iloc[-1, 1]
 for i in range(1, len(df)):
     if not pd.isna(df.iloc[i, 1]) and not pd.isna(df.iloc[i, 2]) and not pd.isna(df.iloc[i, 3]):
         print(df.iloc[i, 1], df.iloc[i, 2], df.iloc[i, 3])
@@ -626,6 +626,13 @@ title = ax.text(0.5, 0.95, 'Qui a attrapé le plus de Pokémon ?',
         fontsize=18, fontweight='bold',
         color='#95BADD')  # Bleu Pokémon
 
+ax.text(0.5, 0.02,
+        date_str,
+        transform=ax.transAxes,
+        ha='center',
+        va='bottom',
+        fontsize=10,
+        color='#666666')
 
 plt.tight_layout()
 plt.savefig('classement_pokemon.png',
