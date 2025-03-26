@@ -13,7 +13,7 @@ import stat
 import sqlite3
 import shutil
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
+from matplotlib.table import Table
 
 # Creation or update of the SQLite table
 def init_database(db_path="scoreboard.db"):
@@ -541,44 +541,96 @@ if config['COBBLEMONLEADERBOARDS']['SQLiteOutput']:
 
 
 
-# Charger les données en spécifiant l'en-tête
+############################################################################################################
+
+
 df = pd.read_excel("output.xlsx", sheet_name="leaderboard2", header=None)
+df = df.dropna(how='all')
 
-# Nettoyage manuel (exemple pour votre structure)
-df = df.dropna(how='all')  # Supprime lignes vides
-df.columns = ["Rank", "Joueur", "Score"]  # Nommez selon votre structure réelle
+#df.valuers:
+#[[nan 'Qui a attrapé le plus de Cobblemons ?' nan nan]
+# [nan 'rank' 'player' 'score']
+#...
+# [nan 'Dernière update le 26.03.25 à 00:22' nan nan]]
 
-# Conversion des scores en numérique
-df["Score"] = pd.to_numeric(df["Score"], errors='coerce')
-df = df.dropna(subset=["Score"]).sort_values(by="Score", ascending=False)
 
-# Création du graphique
-plt.figure(figsize=(10, 8))
-plt.style.use('ggplot')  # Style moderne
+title = df.iloc[0, 1]
+players = [] #rank, player, score
+col_name = ["Rank", "Player", "Score"]
+date_srt = df.iloc[-1, 1]
+for i in range(1, len(df)):
+    if not pd.isna(df.iloc[i, 1]) and not pd.isna(df.iloc[i, 2]) and not pd.isna(df.iloc[i, 3]):
+        print(df.iloc[i, 1], df.iloc[i, 2], df.iloc[i, 3])
+        players.append([df.iloc[i, 1], df.iloc[i, 2], int(df.iloc[i, 3])])
 
-# Barres horizontales
-bars = plt.barh(
-    df["Joueur"][:10][::-1],  # Top 10 inversé pour meilleur en haut
-    df["Score"][:10][::-1],
-    color='#4e79a7'  # Couleur bleue
-)
+##sort by score in descending order => need to pass to number to avoid error
+players = sorted(players, key=lambda x: x[2], reverse=True)
 
-# Ajouter les valeurs
-for bar in bars:
-    width = bar.get_width()
-    plt.text(width + 5, bar.get_y() + 0.3, f"{int(width)}",
-             va='center', fontsize=10)
+# Création de la figure sans style seaborn
+fig_height = max(4, len(players)*0.4)
+plt.figure(figsize=(10, fig_height), facecolor='#131e33')
+ax = plt.gca()
+plt.subplots_adjust(left=0.05, right=0.95, top=0.85, bottom=0.05)
+ax.axis('off')
+ax.axis('tight')
 
-# Personnalisation
-plt.title("Classement Cobblemon - Top 10", fontsize=14, pad=20)
-plt.xlabel("Nombre attrapés", fontsize=12)
-plt.gca().invert_yaxis()  # Meilleur joueur en haut
+# Préparation des couleurs
+colors = []
+for i in range(len(players)):
+    if i == 0:  # 1er - Or
+        row_color = ['#FFD700']*3
+    elif i == 1:  # 2ème - Argent
+        row_color = ['#C0C0C0']*3
+    elif i == 2:  # 3ème - Bronze
+        row_color = ['#CD7F32']*3
+    else:  # Autres - Couleur de fond légère
+        row_color = ['#f5f5f5']*3
+    colors.append(row_color)
+
+# Création du tableau with value (rank | players | score)
+print(players),
+print(col_name),
+print(colors)
+table = ax.table(cellText=players,
+                    colLabels=col_name,
+                    cellLoc='center',
+                    loc='center',
+                    cellColours=colors,
+                    colWidths=[0.1, 0.5, 0.3])
+
+# Personnalisation du tableau
+table.auto_set_font_size(False)
+table.set_fontsize(12)
+table.scale(1, 2)
+
+# Style des cellules
+for (i, j), cell in table.get_celld().items():
+    if i == 0:  # En-tête
+        cell.set_text_props(fontweight='bold', color='white')
+        cell.set_facecolor('#2a75bb')  # Bleu Pokémon
+    if j == 2:  # Colonne Score
+        cell.get_text().set_horizontalalignment('right')
+
+# Ajout d'éléments décoratifs
+ax.set_title('Classement Pokémon',
+        fontsize=18,
+        fontweight='bold',
+        pad=20,
+        color='#E95555')  # Rouge Pokémon
+
+
+# Titre principal
+title = ax.text(0.5, 0.95, 'Qui a attrapé le plus de Pokémon ?',
+        transform=ax.transAxes,
+        ha='center', va='bottom',
+        fontsize=18, fontweight='bold',
+        color='#95BADD')  # Bleu Pokémon
+
+
 plt.tight_layout()
-
-# Sauvegarde
-plt.savefig("leaderboard_clean.png", dpi=120, bbox_inches='tight')
-plt.close()
-
-
+plt.savefig('classement_pokemon.png',
+            bbox_inches='tight',
+            dpi=150,
+            transparent=False)
 
 print("Done!")
