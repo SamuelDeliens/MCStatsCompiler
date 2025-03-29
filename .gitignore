@@ -5,3 +5,6 @@ total.csv
 global.csv
 scoreboard.db
 .env
+data
+.venv
+**.DS_Store
